@@ -1,322 +1,316 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './HomePage.module.css';
 
-function Section({ id, icon, title, children }) {
+// ── helpers ───────────────────────────────────────────────────────────
+function StatCard({ label, value, sub, color, icon }) {
   return (
-    <div className={styles.section} id={id}>
-      <div className={styles.sectionHeader}>
-        <span className={styles.sectionIcon}>{icon}</span>
-        <h2 className={styles.sectionTitle}>{title}</h2>
-      </div>
-      {children}
+    <div className={styles.statCard}>
+      <div className={styles.statIcon}>{icon}</div>
+      <div className={styles.statVal} style={color ? { color } : {}}>{value}</div>
+      <div className={styles.statLabel}>{label}</div>
+      {sub && <div className={styles.statSub}>{sub}</div>}
     </div>
   );
 }
 
-function Step({ num, title, children }) {
+function PanelHeader({ icon, title, sub, color }) {
   return (
-    <div className={styles.step}>
-      <div className={styles.stepNum}>{num}</div>
-      <div className={styles.stepBody}>
-        <div className={styles.stepTitle}>{title}</div>
-        <div className={styles.stepContent}>{children}</div>
+    <div className={styles.panelHeader} style={{ borderColor: color }}>
+      <span className={styles.panelIcon}>{icon}</span>
+      <div>
+        <div className={styles.panelTitle}>{title}</div>
+        {sub && <div className={styles.panelSub}>{sub}</div>}
       </div>
     </div>
   );
 }
 
-function ConceptCard({ icon, title, description, example }) {
-  const [open, setOpen] = useState(false);
+function MiniBar({ label, value, max, color }) {
+  const pct = max > 0 ? Math.round((value / max) * 100) : 0;
   return (
-    <div className={styles.conceptCard}>
-      <div className={styles.conceptHeader} onClick={() => setOpen(o => !o)}>
-        <span className={styles.conceptIcon}>{icon}</span>
-        <div className={styles.conceptTitles}>
-          <div className={styles.conceptTitle}>{title}</div>
-          <div className={styles.conceptDesc}>{description}</div>
-        </div>
-        <span className={styles.conceptToggle}>{open ? '▲' : '▼'}</span>
+    <div className={styles.miniBar}>
+      <div className={styles.miniBarLabel}>{label}</div>
+      <div className={styles.miniBarTrack}>
+        <div className={styles.miniBarFill} style={{ width: pct + '%', background: color || '#2E6DB4' }} />
       </div>
-      {open && (
-        <div className={styles.conceptExample}>
-          <div className={styles.conceptExampleLabel}>Real example:</div>
-          <p>{example}</p>
-        </div>
-      )}
+      <div className={styles.miniBarVal}>{value}</div>
     </div>
   );
 }
 
-function FaqItem({ q, a }) {
-  const [open, setOpen] = useState(false);
+function Badge({ label, type }) {
+  const colors = {
+    active: '#1B5E20', inactive: '#7D4E00', good: '#1B5E20',
+    needswork: '#7D4E00', poor: '#8B0000', default: '#475569'
+  };
+  const bgs = {
+    active: '#D4EFDF', inactive: '#FEF3CD', good: '#D4EFDF',
+    needswork: '#FEF3CD', poor: '#FDECEA', default: '#F1F5F9'
+  };
+  const key = (type || 'default').toLowerCase().replace(' ', '');
   return (
-    <div className={styles.faqItem}>
-      <div className={styles.faqQ} onClick={() => setOpen(o => !o)}>
-        <span>{q}</span>
-        <span className={styles.faqToggle}>{open ? '▲' : '▼'}</span>
-      </div>
-      {open && <div className={styles.faqA}>{a}</div>}
-    </div>
+    <span className={styles.badge}
+      style={{ background: bgs[key] || bgs.default, color: colors[key] || colors.default }}>
+      {label}
+    </span>
   );
 }
 
-function NavCard({ icon, title, desc, badge, href }) {
+function ActionItem({ icon, title, desc, href, urgent }) {
   return (
-    <a href={href} className={styles.navCard}>
-      <div className={styles.navCardIcon}>{icon}</div>
-      <div className={styles.navCardBody}>
-        <div className={styles.navCardTitle}>{title}
-          {badge && <span className={styles.navCardBadge}>{badge}</span>}
-        </div>
-        <div className={styles.navCardDesc}>{desc}</div>
+    <a href={href} className={`${styles.actionItem} ${urgent ? styles.actionUrgent : ''}`}>
+      <span className={styles.actionIcon}>{icon}</span>
+      <div>
+        <div className={styles.actionTitle}>{title}</div>
+        <div className={styles.actionDesc}>{desc}</div>
       </div>
-      <span className={styles.navCardArrow}>→</span>
+      <span className={styles.actionArrow}>→</span>
     </a>
   );
 }
 
+// ── APEX PANEL ────────────────────────────────────────────────────────
+function ApexPanel({ data }) {
+  const d = data || {
+    total: 131, triggers: 21, prodClasses: 95, testClasses: 36,
+    govRisks: 8, flowCandidates: 25, good: 118, needsWork: 13, poor: 0,
+    domains: [
+      { name: 'Quotes/CPQ', count: 30 }, { name: 'Finance', count: 26 },
+      { name: 'Customer Success', count: 16 }, { name: 'General', count: 11 },
+      { name: 'Sales', count: 8 }, { name: 'Marketing', count: 4 },
+    ]
+  };
+  return (
+    <div className={styles.panel}>
+      <PanelHeader icon="⚡" title="Apex Code" sub={`${d.total} files · last refreshed from Salesforce`} color="#1B3A6B" />
+      <div className={styles.panelStats}>
+        <StatCard label="Total files" value={d.total} icon="📁" />
+        <StatCard label="Gov risks" value={d.govRisks} icon="⚠️" color="#8B0000" sub="Need urgent fix" />
+        <StatCard label="Flow candidates" value={d.flowCandidates} icon="🔄" color="#1B5E20" sub="Can be replaced" />
+        <StatCard label="Needs work" value={d.needsWork} icon="🔧" color="#7D4E00" />
+      </div>
+      <div className={styles.panelSection}>
+        <div className={styles.panelSectionTitle}>By domain</div>
+        {d.domains.map(dom => (
+          <MiniBar key={dom.name} label={dom.name} value={dom.count} max={d.total} color="#2E6DB4" />
+        ))}
+      </div>
+      <div className={styles.panelSection}>
+        <div className={styles.panelSectionTitle}>Quality breakdown</div>
+        <div className={styles.qualityRow}>
+          <Badge label={`✅ Good — ${d.good}`} type="good" />
+          <Badge label={`⚠️ Needs Work — ${d.needsWork}`} type="needswork" />
+          <Badge label={`❌ Poor — ${d.poor}`} type="poor" />
+        </div>
+      </div>
+      <a href="#/inventory" className={styles.panelCta}>Open Apex Inventory →</a>
+    </div>
+  );
+}
+
+// ── FLOWS PANEL ───────────────────────────────────────────────────────
+function FlowsPanel({ data }) {
+  const d = data || {
+    total: 300, active: 221, inactive: 79,
+    categories: [
+      { name: 'Opportunity / pipeline', count: 49 },
+      { name: 'Customer Success', count: 39 },
+      { name: 'Lead management', count: 31 },
+      { name: 'Contact management', count: 16 },
+      { name: 'Marketing attribution', count: 16 },
+      { name: 'Quote / contract', count: 16 },
+    ],
+    objects: [
+      { name: 'Opportunity', count: 70 },
+      { name: 'Lead', count: 33 },
+      { name: 'Contact', count: 30 },
+      { name: 'Account', count: 16 },
+    ],
+    legacyWorkflow: 12,
+    managedPackage: 77,
+  };
+  return (
+    <div className={styles.panel}>
+      <PanelHeader icon="🔀" title="Salesforce Flows" sub={`${d.total} flows · ${d.active} active · ${d.inactive} inactive`} color="#1B5E20" />
+      <div className={styles.panelStats}>
+        <StatCard label="Total flows" value={d.total} icon="🔀" />
+        <StatCard label="Active" value={d.active} icon="✅" color="#1B5E20" />
+        <StatCard label="Inactive" value={d.inactive} icon="⏸️" color="#7D4E00" sub="Review needed" />
+        <StatCard label="Legacy workflows" value={d.legacyWorkflow} icon="🕰️" color="#8B0000" sub="Migrate to Flow" />
+      </div>
+      <div className={styles.panelSection}>
+        <div className={styles.panelSectionTitle}>Top categories (custom flows only)</div>
+        {d.categories.map(cat => (
+          <MiniBar key={cat.name} label={cat.name} value={cat.count} max={d.total} color="#1B5E20" />
+        ))}
+      </div>
+      <div className={styles.panelSection}>
+        <div className={styles.panelSectionTitle}>Top trigger objects</div>
+        <div className={styles.objectPills}>
+          {d.objects.map(obj => (
+            <span key={obj.name} className={styles.objectPill}>{obj.name} <strong>{obj.count}</strong></span>
+          ))}
+        </div>
+      </div>
+      <a href="#/flows" className={styles.panelCta}>Open Flow Inventory →</a>
+    </div>
+  );
+}
+
+// ── FIELDS PANEL ─────────────────────────────────────────────────────
+function FieldsPanel({ data }) {
+  const d = data || {
+    total: 847, custom: 312, standard: 535,
+    recommendations: [
+      { label: 'Standard — keep', count: 535, color: '#1B5E20' },
+      { label: 'Custom — keep', count: 198, color: '#2E6DB4' },
+      { label: 'Custom — review', count: 89, color: '#7D4E00' },
+      { label: 'Custom — deprecate', count: 25, color: '#8B0000' },
+    ],
+    themes: [
+      { name: 'Enrollment / Size', count: 142 },
+      { name: 'Revenue / ARR', count: 98 },
+      { name: 'Onboarding', count: 76 },
+      { name: 'Lead / Pipeline', count: 68 },
+      { name: 'Other', count: 463 },
+    ]
+  };
+  return (
+    <div className={styles.panel}>
+      <PanelHeader icon="🏷️" title="Field Registry" sub={`${d.total} fields · ${d.custom} custom · ${d.standard} standard`} color="#7D4E00" />
+      <div className={styles.panelStats}>
+        <StatCard label="Total fields" value={d.total} icon="🏷️" />
+        <StatCard label="Custom fields" value={d.custom} icon="⚙️" color="#2E6DB4" />
+        <StatCard label="Review needed" value={d.recommendations[2]?.count || 89} icon="⚠️" color="#7D4E00" />
+        <StatCard label="Deprecate" value={d.recommendations[3]?.count || 25} icon="🗑️" color="#8B0000" />
+      </div>
+      <div className={styles.panelSection}>
+        <div className={styles.panelSectionTitle}>Recommendation breakdown</div>
+        {d.recommendations.map(r => (
+          <MiniBar key={r.label} label={r.label} value={r.count} max={d.total} color={r.color} />
+        ))}
+      </div>
+      <div className={styles.panelSection}>
+        <div className={styles.panelSectionTitle}>Top themes / groups</div>
+        {d.themes.slice(0, 4).map(t => (
+          <MiniBar key={t.name} label={t.name} value={t.count} max={d.total} color="#7D4E00" />
+        ))}
+      </div>
+      <a href="#/fields" className={styles.panelCta}>Open Field Registry →</a>
+    </div>
+  );
+}
+
+// ── ACTIONS PANEL ─────────────────────────────────────────────────────
+function ActionsPanel() {
+  return (
+    <div className={styles.actionsPanel}>
+      <div className={styles.actionsPanelTitle}>🎯 Priority actions</div>
+      <ActionItem urgent icon="🔴" href="#/inventory"
+        title="8 Apex files have governor limit risks"
+        desc="SOQL or DML inside loops — will crash on bulk operations" />
+      <ActionItem urgent icon="🟠" href="#/inventory"
+        title="13 Apex files need quality fixes"
+        desc="Debug statements, @future usage, high SOQL count" />
+      <ActionItem icon="🕰️" href="#/flows"
+        title="12 legacy Workflow Rules active"
+        desc="Salesforce retiring Workflow Rules — migrate to Flow" />
+      <ActionItem icon="🔀" href="#/flows"
+        title="79 inactive Flows to review"
+        desc="Deactivated flows taking up org space — review and delete" />
+      <ActionItem icon="🏷️" href="#/fields"
+        title="25 custom fields marked for deprecation"
+        desc="Fields with no usage or superseded by newer fields" />
+      <ActionItem icon="🔍" href="#/debugger"
+        title="Debug any Apex or Flow issue"
+        desc="Paste code, describe the problem, get an AI diagnosis" />
+    </div>
+  );
+}
+
+// ── MAIN PAGE ─────────────────────────────────────────────────────────
 export default function HomePage() {
+  const [lastRefresh, setLastRefresh] = useState(null);
+
+  useEffect(() => {
+    try {
+      const ts = localStorage.getItem('sfdc_last_refresh');
+      if (ts) setLastRefresh(new Date(ts).toLocaleDateString());
+    } catch(e) {}
+  }, []);
+
   return (
     <div className={styles.page}>
 
-      {/* Hero */}
-      <div className={styles.hero}>
-        <div className={styles.heroLeft}>
-          <div className={styles.heroBadge}>Built for Quizizz RevOps · No coding knowledge required</div>
-          <h1 className={styles.heroTitle}>Your Salesforce Apex<br />Management Tool</h1>
-          <p className={styles.heroSub}>
-            This tool helps you understand, organise, and fix the Apex code
-            running inside your Salesforce org — even if you have never written
-            a single line of code.
+      {/* Header */}
+      <div className={styles.header}>
+        <div>
+          <h1 className={styles.headerTitle}>RevOps Command Centre</h1>
+          <p className={styles.headerSub}>
+            Salesforce org health · Apex · Flows · Fields · Quizizz RevOps
+            {lastRefresh && <span className={styles.headerRefresh}> · Last refreshed {lastRefresh}</span>}
           </p>
-          <div className={styles.heroActions}>
-            <a href="#/settings" className={styles.heroBtnPrimary}>Get started → Settings</a>
-            <a href="#what-is-apex" className={styles.heroBtnSecondary}>What is Apex?</a>
-          </div>
         </div>
-        <div className={styles.heroRight}>
-          <div className={styles.heroCard}>
-            <div className={styles.heroCardRow}>
-              <span className={styles.heroCardLabel}>Total Apex files in your org</span>
-              <span className={styles.heroCardVal}>131</span>
-            </div>
-            <div className={styles.heroCardRow}>
-              <span className={styles.heroCardLabel}>Files with issues</span>
-              <span className={styles.heroCardVal} style={{color:'#8B0000'}}>76</span>
-            </div>
-            <div className={styles.heroCardRow}>
-              <span className={styles.heroCardLabel}>Flow replacement candidates</span>
-              <span className={styles.heroCardVal} style={{color:'#1B5E20'}}>25</span>
-            </div>
-            <div className={styles.heroCardRow}>
-              <span className={styles.heroCardLabel}>Governor limit risks</span>
-              <span className={styles.heroCardVal} style={{color:'#E65100'}}>18</span>
-            </div>
-            <div className={styles.heroCardNote}>↑ Example from the Quizizz org. Run the Inventory to see your live numbers.</div>
-          </div>
+        <div className={styles.headerActions}>
+          <a href="#/inventory" className={styles.headerBtn}>🔄 Refresh Apex</a>
+          <a href="#/flows" className={styles.headerBtn}>🔀 Refresh Flows</a>
         </div>
       </div>
+
+      {/* Top summary strip */}
+      <div className={styles.summaryStrip}>
+        {[
+          { val: '131', label: 'Apex files', color: '#1B3A6B', icon: '⚡' },
+          { val: '300', label: 'Flows total', color: '#1B5E20', icon: '🔀' },
+          { val: '221', label: 'Active flows', color: '#1B5E20', icon: '✅' },
+          { val: '8',   label: 'Gov limit risks', color: '#8B0000', icon: '⚠️' },
+          { val: '25',  label: 'Flow candidates', color: '#2E6DB4', icon: '🔄' },
+          { val: '12',  label: 'Legacy workflows', color: '#8B0000', icon: '🕰️' },
+        ].map(s => (
+          <div key={s.label} className={styles.stripStat}>
+            <span className={styles.stripIcon}>{s.icon}</span>
+            <span className={styles.stripVal} style={{ color: s.color }}>{s.val}</span>
+            <span className={styles.stripLabel}>{s.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Three panels */}
+      <div className={styles.panelGrid}>
+        <ApexPanel />
+        <FlowsPanel />
+        <FieldsPanel />
+      </div>
+
+      {/* Actions */}
+      <ActionsPanel />
 
       {/* Nav cards */}
       <div className={styles.navCards}>
-        <NavCard href="#/inventory" icon="📋" title="Inventory"
-          badge="Start here"
-          desc="See every Apex class and trigger in your org. Understand what each one does, which objects it touches, and whether it has issues." />
-        <NavCard href="#/debugger" icon="🔍" title="Debugger"
-          desc="Paste any piece of Apex code, describe what it should do, and get a plain-English diagnosis with exact fixes." />
-        <NavCard href="#/settings" icon="⚙️" title="Settings"
-          desc="Connect your Salesforce org and Google Sheet. Takes 5 minutes. You only need to do this once." />
-      </div>
-
-      {/* What is Apex */}
-      <Section id="what-is-apex" icon="💡" title="What is Apex? — Plain English">
-        <p className={styles.sectionIntro}>
-          Apex is code that lives inside Salesforce and runs automatically when things happen —
-          like when a deal closes or a contact is created. You cannot see it by clicking around
-          in Salesforce — it runs behind the scenes. Think of it as the plumbing behind the walls.
-        </p>
-        <div className={styles.conceptGrid}>
-          <ConceptCard
-            icon="⚡"
-            title="Apex Trigger"
-            description="Code that fires automatically when a Salesforce record is created, updated, or deleted."
-            example="When an Opportunity is marked Closed Won → a Trigger fires → it creates a Renewal Opportunity automatically. You never clicked anything — the Trigger did it."
-          />
-          <ConceptCard
-            icon="📦"
-            title="Apex Class"
-            description="A file of reusable code that contains the actual logic. Triggers usually call a Class to do the work."
-            example="InvoiceOnClosedWonOppHandler is a Class. It contains the instructions for how to build an Invoice record. The Trigger calls this Class and says 'go build the invoice now'."
-          />
-          <ConceptCard
-            icon="🧪"
-            title="Test Class"
-            description="Code that checks whether the real code works correctly. Salesforce requires these before you can deploy changes."
-            example="opportunityTrigger_HelperTest is a Test Class. It pretends to close a deal and checks that a Renewal Opp was created correctly. If this test fails, your deployment is blocked."
-          />
-          <ConceptCard
-            icon="🚦"
-            title="Governor Limits"
-            description="Salesforce enforces strict limits on how much each piece of code can do in one transaction."
-            example="You can only run 100 database queries per transaction. If a Trigger runs a query inside a loop, it can hit this limit and crash — throwing 'Too many SOQL queries: 101'. This tool flags those risks automatically."
-          />
-          <ConceptCard
-            icon="🔄"
-            title="Salesforce Flow"
-            description="A visual, no-code alternative to Apex. You build flows by dragging and dropping boxes instead of writing code."
-            example="Instead of a Trigger that stamps a field on close, you can build a Flow that does the same thing — and any admin can read and edit it without coding knowledge."
-          />
-          <ConceptCard
-            icon="📊"
-            title="Tooling API"
-            description="A special Salesforce interface that lets tools like this one read your Apex code programmatically."
-            example="When you click 'Refresh Inventory', this tool calls the Tooling API asking 'give me all Apex classes'. Salesforce sends back the code and this tool analyses it."
-          />
-        </div>
-      </Section>
-
-      {/* How to use */}
-      <Section icon="🚀" title="How to Use This Tool — Step by Step">
-        <Step num="1" title="Connect your Salesforce org (one time only)">
-          Go to <strong>Settings</strong> and add:
-          <ul className={styles.stepList}>
-            <li><strong>Salesforce Instance URL</strong> — this is <code>https://quizizz.my.salesforce.com</code></li>
-            <li><strong>Session token</strong> — get this from Workbench (see below)</li>
-            <li><strong>Anthropic API key</strong> — this is what powers the AI analysis</li>
-            <li><strong>Google Sheet ID</strong> — so results sync to your spreadsheet automatically</li>
-          </ul>
-          <div className={styles.stepTip}>
-            💡 <strong>Getting a session token from Workbench:</strong> Go to workbench.developerforce.com → log in → click Info → Session Information → copy the SessionId value. Tokens expire after a few hours so you may need to refresh this occasionally.
-          </div>
-        </Step>
-
-        <Step num="2" title="Run the Inventory">
-          Go to <strong>Inventory</strong> and click <strong>Refresh Inventory</strong>. The tool will:
-          <ul className={styles.stepList}>
-            <li>Fetch all 131 custom Apex files from your Salesforce org</li>
-            <li>Analyse each one — what it does, which objects it touches, quality rating</li>
-            <li>Flag files with governor limit risks or quality issues</li>
-            <li>Identify which ones could be replaced with a Flow</li>
-            <li>Write everything to your Google Sheet automatically</li>
-          </ul>
-          <div className={styles.stepTip}>
-            💡 The first run analyses everything and takes a few minutes. After that, it only re-analyses files that changed — so subsequent runs are much faster.
-          </div>
-        </Step>
-
-        <Step num="3" title="Read the results">
-          After the run, you'll see a table with every Apex file. Here is what each column means:
-          <div className={styles.columnGuide}>
-            {[
-              ['Quality Rating', 'Good / Needs Work / Poor — overall health of the code'],
-              ['Gov. Risk', 'YES means the code will crash when too many records are processed at once'],
-              ['Can Be Flow?', 'Yes = this could be replaced with a no-code Flow. Probably = worth investigating'],
-              ['Domain', 'Which business area this code belongs to — Sales, Finance, Customer Success etc.'],
-              ['Change Status', 'New = added since last run. Changed = modified since last run'],
-            ].map(([col, desc]) => (
-              <div key={col} className={styles.columnRow}>
-                <span className={styles.columnName}>{col}</span>
-                <span className={styles.columnDesc}>{desc}</span>
+        {[
+          { href: '#/inventory', icon: '⚡', title: 'Apex Inventory', badge: 'Refresh anytime',
+            desc: 'Full analysis of all 131 Apex classes and triggers — quality, gov risks, Flow candidates, domain.' },
+          { href: '#/flows', icon: '🔀', title: 'Flow Inventory',
+            desc: '300 Flows across 15 categories. Active vs inactive, by object, by category. Sync from your Google Sheet.' },
+          { href: '#/fields', icon: '🏷️', title: 'Field Registry',
+            desc: 'All fields from your Field Registry sheet. Filter by object, data type, theme, and recommendation.' },
+          { href: '#/debugger', icon: '🔍', title: 'Debugger',
+            desc: 'Paste any Apex or Flow XML. Describe what it should do. Get an AI diagnosis with exact code fixes.' },
+          { href: '#/settings', icon: '⚙️', title: 'Settings',
+            desc: 'Connect Salesforce, Anthropic API key, and your three Google Sheets.' },
+        ].map(c => (
+          <a key={c.href} href={c.href} className={styles.navCard}>
+            <div className={styles.navCardIcon}>{c.icon}</div>
+            <div className={styles.navCardBody}>
+              <div className={styles.navCardTitle}>{c.title}
+                {c.badge && <span className={styles.navCardBadge}>{c.badge}</span>}
               </div>
-            ))}
-          </div>
-        </Step>
-
-        <Step num="4" title="Debug a specific file">
-          Go to <strong>Debugger</strong>. Open the Apex file in Salesforce Developer Console (Setup → Developer Console → File → Open → Classes), copy the code, paste it in the Debugger, and describe what it should do. The tool will:
-          <ul className={styles.stepList}>
-            <li>Identify every bug and rate it Critical / High / Medium / Low</li>
-            <li>Show the exact line to change with a before/after code comparison</li>
-            <li>Suggest optimisations for performance and maintainability</li>
-            <li>Tell you if the whole thing could be replaced with a Flow</li>
-            <li>Tell you exactly what to test after making the fixes</li>
-          </ul>
-          <div className={styles.stepTip}>
-            💡 Click <strong>Load example</strong> in the Debugger to see a worked example using the InvoiceOnClosedWonOpp trigger from the Quizizz org.
-          </div>
-        </Step>
-      </Section>
-
-      {/* Reading quality ratings */}
-      <Section icon="📊" title="How to Read the Quality Ratings">
-        <p className={styles.sectionIntro}>Every file gets a rating. Here is exactly what each one means and what to do about it.</p>
-        <div className={styles.ratingGrid}>
-          <div className={styles.ratingCard} style={{borderColor:'#1B5E20'}}>
-            <div className={styles.ratingBadge} style={{background:'#D4EFDF',color:'#1B5E20'}}>✅ Good</div>
-            <p className={styles.ratingDesc}>The code follows best practices. No governor limit risks. Clean structure. You can leave this alone.</p>
-            <p className={styles.ratingAction}><strong>Action:</strong> No immediate action needed. Document what it does and move on.</p>
-          </div>
-          <div className={styles.ratingCard} style={{borderColor:'#7D4E00'}}>
-            <div className={styles.ratingBadge} style={{background:'#FEF3CD',color:'#7D4E00'}}>⚠️ Needs Work</div>
-            <p className={styles.ratingDesc}>Has issues like debug statements left in, or logic that could be cleaner. Not broken but not great.</p>
-            <p className={styles.ratingAction}><strong>Action:</strong> Put on a cleanup list. Use the Debugger to get exact fix suggestions.</p>
-          </div>
-          <div className={styles.ratingCard} style={{borderColor:'#8B0000'}}>
-            <div className={styles.ratingBadge} style={{background:'#FDECEA',color:'#8B0000'}}>❌ Poor</div>
-            <p className={styles.ratingDesc}>Has critical issues — usually SOQL or DML inside loops. Will cause errors when processing large volumes of records.</p>
-            <p className={styles.ratingAction}><strong>Action:</strong> Fix urgently. Share with your developer or consultant using the Debugger output.</p>
-          </div>
-        </div>
-      </Section>
-
-      {/* FAQ */}
-      <Section icon="❓" title="Common Questions">
-        <div className={styles.faqList}>
-          <FaqItem
-            q="I have zero coding knowledge. Can I still use this tool?"
-            a="Yes — that is exactly who this tool is built for. You do not need to understand the code to use the Inventory. The tool reads the code for you and explains everything in plain English. The Debugger is more useful if you have a developer or consultant to hand the output to — you describe the problem, the tool diagnoses it, your developer fixes it."
-          />
-          <FaqItem
-            q="Will this tool make any changes to my Salesforce org?"
-            a="No. This tool only reads from Salesforce — it never writes, updates, or deletes anything in your org. The only thing it writes to is your Google Sheet. Your Salesforce data and code are completely safe."
-          />
-          <FaqItem
-            q="My session token stopped working — what do I do?"
-            a="Salesforce session tokens expire after a few hours. Go to workbench.developerforce.com, log in, click Info → Session Information, copy the new SessionId, and update it in Settings. This is normal and expected — you will need to do this each time you use the tool."
-          />
-          <FaqItem
-            q="What is an Anthropic API key and why do I need it?"
-            a="Anthropic makes Claude, the AI that powers the analysis in this tool. Without an API key, the tool falls back to basic local analysis which is less detailed. To get a key: go to console.anthropic.com, sign up, and create an API key under API Keys. There is a small cost per use (fractions of a cent per file analysed)."
-          />
-          <FaqItem
-            q="The tool says a file 'Can Be Flow — Yes'. What does that mean?"
-            a="It means the logic in that Apex file is simple enough that it could be rebuilt as a Salesforce Flow — a visual, no-code automation. Flows are easier to read, edit, and maintain without a developer. The Debugger tab will give you a detailed recommendation on whether to make the switch and what to watch out for."
-          />
-          <FaqItem
-            q="What is a governor limit risk and why does it matter?"
-            a="Salesforce puts strict limits on how much any piece of code can do at once — for example, maximum 100 database queries per transaction. If code has a query inside a loop, it can exceed this limit and crash when processing many records. The tool flags these as 'Governor Risk: YES'. These are the highest priority issues to fix."
-          />
-          <FaqItem
-            q="Can I share this tool with my Salesforce consultant?"
-            a="Yes — just send them this URL. They will need their own Salesforce token and Anthropic API key. Each person's credentials stay in their own browser and are never shared."
-          />
-        </div>
-      </Section>
-
-      {/* Glossary */}
-      <Section icon="📖" title="Quick Glossary">
-        <div className={styles.glossaryGrid}>
-          {[
-            ['Apex', 'Salesforce\'s programming language. Runs on Salesforce servers, not your computer.'],
-            ['Trigger', 'Apex code that fires automatically when a record is created, updated, or deleted.'],
-            ['Class', 'A file of reusable Apex code. Triggers usually call a Class to do the actual work.'],
-            ['Test Class', 'Code that tests other code. Required by Salesforce before you can deploy changes.'],
-            ['SOQL', 'Salesforce\'s database query language. Like asking "show me all Opportunities where Stage = Closed Won".'],
-            ['DML', 'Database Manipulation Language — the Apex commands to insert, update, or delete records.'],
-            ['Governor Limits', 'Salesforce\'s hard limits on what code can do. Hitting them causes errors.'],
-            ['Bulkification', 'Writing code that handles 1 or 1,000 records the same way. Best practice in Apex.'],
-            ['Flow', 'A no-code visual automation tool in Salesforce. Easier to maintain than Apex.'],
-            ['Tooling API', 'A Salesforce API that allows tools to read Apex code programmatically.'],
-            ['Queueable', 'A way to run Apex code asynchronously (in the background). Better than @future.'],
-            ['Namespace', 'A prefix on managed package code (e.g. SBQQ__ for CPQ). This tool ignores namespaced code — it is not yours.'],
-          ].map(([term, def]) => (
-            <div key={term} className={styles.glossaryItem}>
-              <div className={styles.glossaryTerm}>{term}</div>
-              <div className={styles.glossaryDef}>{def}</div>
+              <div className={styles.navCardDesc}>{c.desc}</div>
             </div>
-          ))}
-        </div>
-      </Section>
+            <span className={styles.navCardArrow}>→</span>
+          </a>
+        ))}
+      </div>
 
     </div>
   );
