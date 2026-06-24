@@ -1,0 +1,111 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.nav {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--navy);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 0;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+}
+
+.navBrand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 16px;
+}
+
+.navLogo {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.navTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.navSub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 2px;
+}
+
+.navLinks {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 12px;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  color: rgba(255,255,255,0.65);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.navLink:hover {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  text-decoration: none;
+}
+
+.navLinkActive {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+
+.navIcon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.navFooter {
+  padding: 16px 20px 0;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  margin-top: 16px;
+}
+
+.githubLink {
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  text-decoration: none;
+}
+
+.githubLink:hover {
+  color: rgba(255,255,255,0.8);
+  text-decoration: none;
+}
+
+.main {
+  flex: 1;
+  margin-left: 220px;
+  min-height: 100vh;
+}
+
+.mainInner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 28px;
+}

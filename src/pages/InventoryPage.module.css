@@ -1,0 +1,21 @@
+.optRow { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.lastRun { font-size: 12px; color: var(--gray400); }
+.statGrid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 20px; }
+.logBox { background: #1e1e2e; border-radius: var(--radius-md); padding: 12px 14px; margin-top: 14px; max-height: 200px; overflow-y: auto; font-family: var(--font-mono); font-size: 12px; line-height: 1.8; }
+.logLine { color: #94a3b8; }
+.logOk   { color: #a6e3a1; }
+.logErr  { color: #f38ba8; }
+.logWarn { color: #f9e2af; }
+.filterRow { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+.searchInput { flex: 1; min-width: 200px; padding: 7px 12px; font-size: 13px; border: 1px solid var(--gray200); border-radius: var(--radius-md); outline: none; font-family: var(--font-sans); }
+.searchInput:focus { border-color: var(--blue); }
+.filterSelect { padding: 7px 10px; font-size: 12px; border: 1px solid var(--gray200); border-radius: var(--radius-md); background: var(--white); outline: none; font-family: var(--font-sans); }
+.filterCount { font-size: 12px; color: var(--gray400); white-space: nowrap; margin-left: auto; }
+.tableWrap { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table th { text-align: left; padding: 8px 10px; background: var(--gray50); color: var(--gray600); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--gray200); white-space: nowrap; }
+.table td { padding: 9px 10px; border-bottom: 1px solid var(--gray100); vertical-align: middle; }
+.table tr:hover td { background: var(--gray50); }
+.nameCell { font-family: var(--font-mono); font-size: 12px; color: var(--navy); font-weight: 500; }
+.typeTag { background: var(--gray100); color: var(--gray600); padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+.emptyRow { text-align: center; color: var(--gray400); padding: 24px !important; font-size: 13px; }
