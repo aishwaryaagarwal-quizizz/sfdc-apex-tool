@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/sfdc-apex-tool/static/css/main.876744f7.css",
-    "main.js": "/sfdc-apex-tool/static/js/main.1149d49c.js",
+    "main.css": "/sfdc-apex-tool/static/css/main.57d21724.css",
+    "main.js": "/sfdc-apex-tool/static/js/main.8baf30c2.js",
     "index.html": "/sfdc-apex-tool/index.html",
-    "main.876744f7.css.map": "/sfdc-apex-tool/static/css/main.876744f7.css.map",
-    "main.1149d49c.js.map": "/sfdc-apex-tool/static/js/main.1149d49c.js.map"
+    "main.57d21724.css.map": "/sfdc-apex-tool/static/css/main.57d21724.css.map",
+    "main.8baf30c2.js.map": "/sfdc-apex-tool/static/js/main.8baf30c2.js.map"
   },
   "entrypoints": [
-    "static/css/main.876744f7.css",
-    "static/js/main.1149d49c.js"
+    "static/css/main.57d21724.css",
+    "static/js/main.8baf30c2.js"
   ]
 }
