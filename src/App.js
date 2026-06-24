@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, NavLink, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, NavLink } from 'react-router-dom';
 import InventoryPage from './pages/InventoryPage';
 import DebuggerPage from './pages/DebuggerPage';
 import SettingsPage from './pages/SettingsPage';
+import HomePage from './pages/HomePage';
 import styles from './App.module.css';
 
 function Nav() {
   const links = [
-    { to: '/',          label: 'Inventory',  icon: '📋' },
+    { to: '/',          label: 'Home',       icon: '🏠' },
+    { to: '/inventory', label: 'Inventory',  icon: '📋' },
     { to: '/debugger',  label: 'Debugger',   icon: '🔍' },
     { to: '/settings',  label: 'Settings',   icon: '⚙️' },
   ];
@@ -30,7 +32,7 @@ function Nav() {
         ))}
       </div>
       <div className={styles.navFooter}>
-        <a href="https://github.com" target="_blank" rel="noreferrer" className={styles.githubLink}>
+        <a href="https://github.com/aishwaryaagarwal-quizizz/sfdc-apex-tool" target="_blank" rel="noreferrer" className={styles.githubLink}>
           View on GitHub →
         </a>
       </div>
@@ -51,14 +53,15 @@ function Layout({ children }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Layout>
         <Routes>
-          <Route path="/"         element={<InventoryPage />} />
-          <Route path="/debugger" element={<DebuggerPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/"          element={<HomePage />} />
+          <Route path="/inventory" element={<InventoryPage />} />
+          <Route path="/debugger"  element={<DebuggerPage />} />
+          <Route path="/settings"  element={<SettingsPage />} />
         </Routes>
       </Layout>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
