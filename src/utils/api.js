@@ -1,12 +1,26 @@
-// ── Salesforce Tooling API ─────────────────────────────────────────────
-export async function fetchApexFromSF(config) {
+// ── Salesforce API — routes through SFDC Proxy Worker to bypass CORS ──
+const PROXY_URL = 'https://sfdc-proxy.aishwaryaagarwal-quizizz.workers.dev';
+
+function sfFetch(path, config) {
   const { sfUrl, sfToken, sfVersion } = config;
-  const base = `${sfUrl}/services/data/${sfVersion}/tooling/query?q=`;
-  const headers = { Authorization: `Bearer ${sfToken}`, 'Content-Type': 'application/json' };
+  // Use proxy worker — avoids Salesforce CORS restrictions
+  const url = `${PROXY_URL}/sf${path}`;
+  return fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      'X-SF-Token': sfToken,
+      'X-SF-Instance': sfUrl,
+    }
+  });
+}
+
+export async function fetchApexFromSF(config) {
+  const { sfVersion } = config;
+  const base = `/services/data/${sfVersion}/tooling/query?q=`;
 
   const [clsRes, trgRes] = await Promise.all([
-    fetch(`${base}SELECT+Id,Name,Body,LastModifiedDate,LastModifiedById+FROM+ApexClass+WHERE+NamespacePrefix+=+null+LIMIT+500`, { headers }),
-    fetch(`${base}SELECT+Id,Name,Body,TableEnumOrId,LastModifiedDate+FROM+ApexTrigger+WHERE+NamespacePrefix+=+null+LIMIT+200`, { headers }),
+    sfFetch(`${base}SELECT+Id,Name,Body,LastModifiedDate,LastModifiedById+FROM+ApexClass+WHERE+NamespacePrefix+=+null+LIMIT+500`, config),
+    sfFetch(`${base}SELECT+Id,Name,Body,TableEnumOrId,LastModifiedDate+FROM+ApexTrigger+WHERE+NamespacePrefix+=+null+LIMIT+200`, config),
   ]);
 
   if (!clsRes.ok) throw new Error(`Salesforce error: ${clsRes.status} — check token and URL`);

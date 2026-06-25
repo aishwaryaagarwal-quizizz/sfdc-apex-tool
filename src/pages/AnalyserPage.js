@@ -72,12 +72,16 @@ function parseJSON(text) {
   return JSON.parse(text.slice(start, end));
 }
 
+const PROXY_URL = 'https://sfdc-proxy.aishwaryaagarwal-quizizz.workers.dev';
+
 async function fetchApexBody(sfUrl, sfVersion, sfToken, name, ftype) {
-  const obj    = ftype === 'ApexTrigger' ? 'ApexTrigger' : 'ApexClass';
-  const url    = `${sfUrl}/services/data/${sfVersion}/tooling/query?q=SELECT+Id,Name,Body+FROM+${obj}+WHERE+Name='${encodeURIComponent(name)}'`;
-  const res    = await fetch(url, { headers: { Authorization: `Bearer ${sfToken}` } });
+  const obj  = ftype === 'ApexTrigger' ? 'ApexTrigger' : 'ApexClass';
+  const path = `/services/data/${sfVersion}/tooling/query?q=SELECT+Id,Name,Body+FROM+${obj}+WHERE+Name='${encodeURIComponent(name)}'`;
+  const res  = await fetch(`${PROXY_URL}/sf${path}`, {
+    headers: { 'X-SF-Token': sfToken, 'X-SF-Instance': sfUrl, 'Content-Type': 'application/json' }
+  });
   if (!res.ok) throw new Error(`SF error ${res.status} for ${name}`);
-  const data   = await res.json();
+  const data = await res.json();
   return data.records?.[0]?.Body || '';
 }
 

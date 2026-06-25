@@ -27,16 +27,27 @@ export default function SettingsPage() {
 
   const set = (key, val) => setCfg(p => ({ ...p, [key]: val }));
 
+  const PROXY_URL = 'https://sfdc-proxy.aishwaryaagarwal-quizizz.workers.dev';
+
   const testSF = async () => {
     setTesting('sf'); setTestResult(null);
     try {
-      const url = `${cfg.sfUrl}/services/data/${cfg.sfVersion}/tooling/query?q=SELECT+COUNT()+FROM+ApexClass+WHERE+NamespacePrefix+=+null`;
-      const res = await fetch(url, { headers: { Authorization: `Bearer ${cfg.sfToken}` } });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      // Test proxy health first
+      const health = await fetch(`${PROXY_URL}/health`).catch(() => null);
+      if (!health || !health.ok) {
+        setTestResult({ type: 'error', msg: '✗ Proxy worker not reachable — deploy the worker first (see instructions below)' });
+        setTesting(''); return;
+      }
+      // Test SF connection through proxy
+      const url = `${PROXY_URL}/sf/services/data/${cfg.sfVersion}/tooling/query?q=SELECT+COUNT()+FROM+ApexClass+WHERE+NamespacePrefix+=+null`;
+      const res = await fetch(url, {
+        headers: { 'X-SF-Token': cfg.sfToken, 'X-SF-Instance': cfg.sfUrl, 'Content-Type': 'application/json' }
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status} — check your session token`);
       const d = await res.json();
-      setTestResult({ type: 'success', msg: `✓ Connected — ${d.records?.[0]?.expr0 || '?'} custom Apex classes found` });
+      setTestResult({ type: 'success', msg: `✓ Connected via proxy — ${d.records?.[0]?.expr0 || d.totalSize || '?'} custom Apex classes found` });
     } catch (e) {
-      setTestResult({ type: 'error', msg: `✗ ${e.message} — check URL and token` });
+      setTestResult({ type: 'error', msg: `✗ ${e.message}` });
     }
     setTesting('');
   };
@@ -156,6 +167,27 @@ export default function SettingsPage() {
             <option value="50">50 files per batch</option>
           </Select>
         </Field>
+      </Card>
+
+      <Card title="⚡ One-time setup — Deploy the proxy worker" icon="🚀">
+        <p style={{ fontSize:13, color:'#475569', lineHeight:1.7, marginBottom:12 }}>
+          The proxy worker sits between your browser and Salesforce to bypass CORS restrictions.
+          Deploy it once in 3 minutes — it runs free forever on Cloudflare.
+        </p>
+        <ol style={{ paddingLeft:20 }}>
+          {[
+            <>Go to <a href="https://cloudflare.com" target="_blank" rel="noreferrer" style={{color:'#2E6DB4'}}>cloudflare.com</a> → sign up free → no credit card needed</>,
+            <>In Terminal: <code style={{background:'#F1F5F9',padding:'2px 6px',borderRadius:4,fontFamily:'monospace'}}>npm install -g wrangler</code></>,
+            <>Then: <code style={{background:'#F1F5F9',padding:'2px 6px',borderRadius:4,fontFamily:'monospace'}}>wrangler login</code> — opens Cloudflare in browser, click Allow</>,
+            <>Download the worker zip below, unzip it, then in Terminal: <code style={{background:'#F1F5F9',padding:'2px 6px',borderRadius:4,fontFamily:'monospace'}}>cd sfdc-worker && npm install && npm run deploy</code></>,
+            <>Done — come back here and click "Test Salesforce connection"</>,
+          ].map((step, i) => (
+            <li key={i} style={{ fontSize:13, color:'#1E293B', lineHeight:2, marginBottom:4 }}>{step}</li>
+          ))}
+        </ol>
+        <div style={{ marginTop:12, padding:'10px 14px', background:'#EBF3FF', borderRadius:8, fontSize:13, color:'#1B3A6B' }}>
+          ℹ️ The worker only forwards requests between your browser and Salesforce — it never stores your token or data.
+        </div>
       </Card>
 
       <Card title="How to get your Salesforce token" icon="❓">
