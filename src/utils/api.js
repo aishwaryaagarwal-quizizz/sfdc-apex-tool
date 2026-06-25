@@ -74,6 +74,40 @@ export function analyseLocally(name, ftype, body = '') {
   };
 }
 
+// ── AI API helper — supports both Anthropic direct and Portkey gateway ──
+function getAIConfig(apiKey) {
+  // Portkey keys start with pk-
+  const isPortkey = apiKey && apiKey.startsWith('pk-');
+  return {
+    isPortkey,
+    url: isPortkey
+      ? 'https://api.portkey.ai/v1/messages'
+      : 'https://api.anthropic.com/v1/messages',
+    headers: isPortkey
+      ? { 'Content-Type': 'application/json', 'x-portkey-api-key': apiKey, 'x-portkey-provider': 'anthropic', 'anthropic-version': '2023-06-01' }
+      : { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+  };
+}
+
+export async function callAI(prompt, apiKey, maxTokens = 1200) {
+  const cfg = getAIConfig(apiKey);
+  const res = await fetch(cfg.url, {
+    method: 'POST',
+    headers: cfg.headers,
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: maxTokens,
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw new Error(`AI API error ${res.status}: ${errText.substring(0, 200)}`);
+  }
+  const data = await res.json();
+  return (data.content || []).map(b => b.text || '').join('');
+}
+
 // ── Claude AI analysis ─────────────────────────────────────────────────
 export async function analyseWithClaude(name, ftype, body, anthropicKey) {
   const prompt = `You are a Salesforce Apex expert. Analyse this ${ftype} named "${name}" and return ONLY a valid JSON object with these exact keys:
@@ -96,19 +130,7 @@ export async function analyseWithClaude(name, ftype, body, anthropicKey) {
 Apex code (first 2500 chars):
 ${body.substring(0, 2500)}`;
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1200,
-      messages: [{ role: 'user', content: prompt }],
-    }),
-  });
-
-  if (!res.ok) throw new Error(`Claude API error: ${res.status}`);
-  const data = await res.json();
-  const text = (data.content || []).map(b => b.text || '').join('');
+  const text = await callAI(prompt, anthropicKey, 1200);
   const start = text.indexOf('{');
   const end = text.lastIndexOf('}') + 1;
   if (start < 0 || end <= start) throw new Error('No JSON in response');
@@ -155,19 +177,7 @@ Respond with ONLY a valid JSON object:
   "overallRating": "Good, Needs Work, or Poor"
 }`;
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 2000,
-      messages: [{ role: 'user', content: prompt }],
-    }),
-  });
-
-  if (!res.ok) throw new Error(`Claude API error: ${res.status}`);
-  const data = await res.json();
-  const text = (data.content || []).map(b => b.text || '').join('');
+  const text = await callAI(prompt, anthropicKey, 2000);
   const start = text.indexOf('{');
   const end = text.lastIndexOf('}') + 1;
   if (start < 0 || end <= start) throw new Error('No JSON in response');

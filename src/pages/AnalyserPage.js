@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { PageHeader, Card, Btn, Alert, Tabs, Field, Select } from '../components/UI';
-import { loadConfig } from '../utils/api';
+import { loadConfig, callAI } from '../utils/api';
 import styles from './AnalyserPage.module.css';
 
 // ── helpers ───────────────────────────────────────────────────────────
@@ -63,25 +63,7 @@ function StepIndicator({ step }) {
   );
 }
 
-// ── API calls ─────────────────────────────────────────────────────────
-async function claudeCall(prompt, anthropicKey, maxTokens = 2000) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': anthropicKey,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: maxTokens,
-      messages: [{ role: 'user', content: prompt }]
-    })
-  });
-  if (!res.ok) throw new Error(`Claude API error: ${res.status}`);
-  const data = await res.json();
-  return (data.content || []).map(b => b.text || '').join('');
-}
+// ── API calls — uses shared callAI helper (supports Portkey + Anthropic) ──
 
 function parseJSON(text) {
   const start = text.indexOf('{');
@@ -146,7 +128,7 @@ Return ONLY valid JSON:
   "questionsToInvestigate": ["question 1", "question 2"]
 }`;
 
-  const text = await claudeCall(prompt, anthropicKey, 3000);
+  const text = await callAI(prompt, anthropicKey, 3000);
   return parseJSON(text);
 }
 
@@ -208,7 +190,7 @@ Analyse the ENTIRE system as one connected process. Return ONLY valid JSON:
   "overallHealthRating": "Good, Needs Work, or Poor"
 }`;
 
-  const text = await claudeCall(prompt, anthropicKey, 4000);
+  const text = await callAI(prompt, anthropicKey, 4000);
   return parseJSON(text);
 }
 

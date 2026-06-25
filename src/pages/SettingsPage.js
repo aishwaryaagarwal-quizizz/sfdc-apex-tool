@@ -88,14 +88,30 @@ export default function SettingsPage() {
         </div>
       </Card>
 
-      <Card title="AI analysis (Anthropic)" icon="🤖">
-        <Field label="Anthropic API key"
-          help="Required for full AI analysis in Inventory and for the Debugger. Get it from console.anthropic.com → API Keys.">
-          <Input type="password" value={cfg.anthropicKey} onChange={e => set('anthropicKey', e.target.value)} placeholder="sk-ant-..." />
+      <Card title="AI analysis — Anthropic or Portkey" icon="🤖">
+        <Field label="API key"
+          help="Paste your Portkey key (starts with pk-) OR your Anthropic key (starts with sk-ant-). The tool detects which one automatically.">
+          <Input type="password" value={cfg.anthropicKey} onChange={e => set('anthropicKey', e.target.value)} placeholder="pk-... or sk-ant-..." />
         </Field>
-        <Alert type="info">
-          Your API key is stored only in your browser's localStorage — it is never sent to any server other than Anthropic's API directly from your browser.
-        </Alert>
+        <div style={{ display:'flex', gap:10, marginTop:4 }}>
+          <div style={{ flex:1, background:'#EBF3FF', borderRadius:8, padding:'10px 14px', fontSize:13 }}>
+            <strong style={{ color:'#1B3A6B' }}>🔑 Portkey</strong>
+            <p style={{ color:'#475569', marginTop:4, fontSize:12, lineHeight:1.6 }}>
+              Your key starts with <code style={{background:'#D6E4F7',padding:'1px 5px',borderRadius:4}}>pk-</code>.
+              Get it from portkey.ai → API Keys. Routes through Portkey gateway to Claude.
+            </p>
+          </div>
+          <div style={{ flex:1, background:'#F8FAFC', borderRadius:8, padding:'10px 14px', fontSize:13, border:'1px solid #E2E8F0' }}>
+            <strong style={{ color:'#475569' }}>🔑 Anthropic (direct)</strong>
+            <p style={{ color:'#94A3B8', marginTop:4, fontSize:12, lineHeight:1.6 }}>
+              Your key starts with <code style={{background:'#F1F5F9',padding:'1px 5px',borderRadius:4}}>sk-ant-</code>.
+              Get it from console.anthropic.com → API Keys.
+            </p>
+          </div>
+        </div>
+        <div style={{ marginTop:10, padding:'8px 12px', background:'#D4EFDF', borderRadius:8, fontSize:12, color:'#1B5E20' }}>
+          ✓ Your API key is stored only in your browser — never sent to any server other than the AI provider directly.
+        </div>
       </Card>
 
       <Card title="Google Sheets sync" icon="📊">
@@ -116,6 +132,19 @@ export default function SettingsPage() {
           <Btn onClick={testSheet} disabled={testing === 'sheet' || !cfg.sheetId || !cfg.gapiKey}>
             {testing === 'sheet' ? 'Testing...' : 'Test Sheet connection'}
           </Btn>
+        </div>
+      </Card>
+
+      <Card title="Google Sheets — additional sheets" icon="📊">
+        <div className={styles.formGrid}>
+          <Field label="Flow Inventory Sheet ID"
+            help="Sheet ID for your Flow Tracker Google Sheet. Leave blank to use the same sheet as Apex.">
+            <Input value={cfg.flowSheetId||''} onChange={e => set('flowSheetId', e.target.value)} placeholder="1ZQoS70OaTK9NS3Z5XGqplzpKlr_EXSwpUUcRp78NHZ8" />
+          </Field>
+          <Field label="Field Registry Sheet ID"
+            help="Sheet ID for your Field Registry Google Sheet.">
+            <Input value={cfg.fieldSheetId||''} onChange={e => set('fieldSheetId', e.target.value)} placeholder="1PcSHyluf62QCNn2rGZx4ZUhDbgiepCJS" />
+          </Field>
         </div>
       </Card>
 
