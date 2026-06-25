@@ -226,6 +226,10 @@ export default function InventoryPage() {
       saveTimestamps(newTs);
 
       setResults(analysed);
+      try {
+        localStorage.setItem('sfdc_apex_inventory', JSON.stringify(analysed));
+        localStorage.setItem('sfdc_last_refresh', new Date().toISOString());
+      } catch(e) {}
       setSummary({ total: allFiles.length, newCount, changedCount, govRiskCount, analysed: analysed.length });
       setStep('analyse', 'done', `${toProcess.length} files analysed`);
 

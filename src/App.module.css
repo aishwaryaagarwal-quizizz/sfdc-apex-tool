@@ -109,3 +109,14 @@
   margin: 0 auto;
   padding: 32px 28px;
 }
+
+.navBadge {
+  background: #E65100;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 99px;
+  margin-left: auto;
+  letter-spacing: 0.03em;
+}
